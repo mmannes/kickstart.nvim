@@ -82,7 +82,7 @@ I hope you enjoy your Neovim journey,
 - TJ
 
 P.S. You can delete this when you're done too. It's your config now! :)
---]]
+--git clone https://github.com/nvim-lua/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim]]
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -114,9 +114,9 @@ vim.opt.showmode = false
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.schedule(function()
-  vim.opt.clipboard = 'unnamedplus'
-end)
+--vim.schedule(function()
+--  vim.opt.clipboard = 'unnamedplus'
+--end)
 
 -- Enable break indent
 vim.opt.breakindent = true
@@ -226,6 +226,31 @@ vim.opt.rtp:prepend(lazypath)
 --  To update plugins you can run
 --    :Lazy update
 --
+--
+--
+-- Copilot Chat
+local IS_DEV = false
+
+local prompts = {
+  -- Code related prompts
+  Explain = 'Please explain how the following code works.',
+  Review = 'Please review the following code and provide suggestions for improvement.',
+  Tests = 'Please explain how the selected code works, then generate unit tests for it.',
+  Refactor = 'Please refactor the following code to improve its clarity and readability.',
+  FixCode = 'Please fix the following code to make it work as intended.',
+  FixError = 'Please explain the error in the following text and provide a solution.',
+  BetterNamings = 'Please provide better names for the following variables and functions.',
+  Documentation = 'Please provide documentation for the following code.',
+  SwaggerApiDocs = 'Please provide documentation for the following API using Swagger.',
+  SwaggerJsDocs = 'Please write JSDoc for the following API using Swagger.',
+  -- Text related prompts
+  Summarize = 'Please summarize the following text.',
+  Spelling = 'Please correct any grammar and spelling errors in the following text.',
+  Wording = 'Please improve the grammar and wording of the following text.',
+  Concise = 'Please rewrite the following text to make it more concise.',
+}
+--
+--
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
@@ -254,6 +279,30 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+  },
+  {
+    'EdenEast/nightfox.nvim',
+    as = 'nightfox',
+    config = function()
+      vim.cmd 'colorscheme nightfox'
+    end,
+  },
+  {
+    'github/copilot.vim',
+  },
+  {
+    'CopilotC-Nvim/CopilotChat.nvim',
+    branch = 'canary',
+    dependencies = {
+      { 'zbirenbaum/copilot.lua' }, -- or github/copilot.vim
+      { 'nvim-lua/plenary.nvim' }, -- for curl, log wrapper
+    },
+    build = 'make tiktoken', -- Only on MacOS or Linux
+    opts = {
+      debug = true, -- Enable debugging
+      -- See Configuration section for rest
+    },
+    -- See Commands section for default commands if you want to lazy load on them
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -585,6 +634,39 @@ require('lazy').setup({
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')
           end
+
+          -- LSP Diagnostics Options Setup
+          local sign = function(opts)
+            vim.fn.sign_define(opts.name, {
+              texthl = opts.name,
+              text = opts.text,
+              numhl = '',
+            })
+          end
+
+          sign { name = 'DiagnosticSignError', text = '' }
+          sign { name = 'DiagnosticSignWarn', text = '' }
+          sign { name = 'DiagnosticSignHint', text = '' }
+          sign { name = 'DiagnosticSignInfo', text = '' }
+
+          vim.diagnostic.config {
+            virtual_text = false,
+            signs = true,
+            update_in_insert = true,
+            underline = true,
+            severity_sort = false,
+            float = {
+              border = 'rounded',
+              source = true,
+              header = '',
+              prefix = '',
+            },
+          }
+
+          vim.cmd [[
+          set signcolumn=yes
+          autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
+          ]]
         end,
       })
 
@@ -608,7 +690,23 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
+        rust_analyzer = {},
+        intelephense = {
+          on_attach = function(client, bufnr)
+            print 'Hello little PHP shit'
+          end,
+          settings = {
+            intelephense = {
+              diagnostics = {
+                undefinedTypes = true,
+              },
+              environment = {
+                shortOpenTag = true,
+                documentRoot = 'main.php',
+              },
+            },
+          },
+        },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -685,7 +783,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = true, cpp = true, php = true }
         local lsp_format_opt
         if disable_filetypes[vim.bo[bufnr].filetype] then
           lsp_format_opt = 'never'
@@ -742,6 +840,7 @@ require('lazy').setup({
       --  nvim-cmp does not ship with all sources by default. They are split
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
     },
     config = function()
@@ -816,9 +915,13 @@ require('lazy').setup({
             -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
             group_index = 0,
           },
-          { name = 'nvim_lsp' },
-          { name = 'luasnip' },
-          { name = 'path' },
+          { name = 'path' }, -- file paths
+          { name = 'nvim_lsp', keyword_length = 3 }, -- from language server
+          { name = 'nvim_lsp_signature_help' }, -- display function signatures with current parameter emphasized
+          { name = 'nvim_lua', keyword_length = 2 }, -- complete neovim's Lua runtime API such vim.lsp.*
+          { name = 'buffer', keyword_length = 2 }, -- source current buffer
+          { name = 'vsnip', keyword_length = 2 }, -- nvim-cmp source for vim-vsnip
+          { name = 'calc' }, -- source for math calculation
         },
       }
     end,
@@ -845,6 +948,48 @@ require('lazy').setup({
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    init = function()
+      local status, lualine = pcall(require, 'lualine')
+      if not status then
+        return
+      end
+
+      -- get lualine nightfly theme
+      local lualine_nightfly = require 'lualine.themes.nightfly'
+
+      -- new colors for theme
+      local new_colors = {
+        blue = '#65D1FF',
+        green = '#3EFFDC',
+        violet = '#FF61EF',
+        yellow = '#FFDA7B',
+        black = '#000000',
+      }
+
+      -- change nightlfy theme colors
+      lualine_nightfly.normal.a.bg = new_colors.blue
+      lualine_nightfly.insert.a.bg = new_colors.green
+      lualine_nightfly.visual.a.bg = new_colors.violet
+      lualine_nightfly.command = {
+        a = {
+          gui = 'bold',
+          bg = new_colors.yellow,
+          fg = new_colors.black, -- black
+        },
+      }
+
+      -- configure lualine with modified theme
+      lualine.setup {
+        options = {
+          theme = lualine_nightfly,
+        },
+      }
+    end,
+  },
+
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
     config = function()
@@ -866,17 +1011,17 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
+      --local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      --statusline.setup { use_icons = vim.g.have_nerd_font }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
+      --statusline.section_location = function()
+      --  return '%2l:%-2v'
+      --end
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
@@ -888,7 +1033,26 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'php',
+        'javascript',
+        'typescript',
+        'phpdoc',
+        'sql',
+        'toml',
+        'rust',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -918,9 +1082,9 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
@@ -954,3 +1118,36 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
+--
+-- TOP REMAPS
+vim.g.mapleader = ' '
+vim.o.jumpoptions = 'view'
+vim.keymap.set('n', '<leader>v', vim.cmd.Ex, { desc = 'Open [V]ertical file explorer' })
+
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
+
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
+
+-- greatest remap ever
+-- paste inside selected text without loosing the copied text
+vim.keymap.set('x', '<leader>p', [["_dP]])
+
+-- next greatest remap ever : asbjornHaland
+vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]])
+vim.keymap.set('n', '<leader>Y', [["+Y]])
+
+vim.keymap.set('n', 'Q', '<nop>')
+
+-- instant find and replace
+vim.keymap.set('n', '<leader>x', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { desc = 'x - instant find and replace' })
+
+-- close quickfix menu after selecting choice
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'qf' },
+  command = [[nnoremap <buffer> <CR> <CR>:cclose<CR>]],
+})
