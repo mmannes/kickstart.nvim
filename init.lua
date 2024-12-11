@@ -90,6 +90,11 @@ P.S. You can delete this when you're done too. It's your config now! :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.expandtab = true
+
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
@@ -228,43 +233,44 @@ vim.opt.rtp:prepend(lazypath)
 --
 --
 --
--- Copilot Chat
-local IS_DEV = false
+-- copilot chat
+local is_dev = false
 
 local prompts = {
-  -- Code related prompts
-  Explain = 'Please explain how the following code works.',
-  Review = 'Please review the following code and provide suggestions for improvement.',
-  Tests = 'Please explain how the selected code works, then generate unit tests for it.',
-  Refactor = 'Please refactor the following code to improve its clarity and readability.',
-  FixCode = 'Please fix the following code to make it work as intended.',
-  FixError = 'Please explain the error in the following text and provide a solution.',
-  BetterNamings = 'Please provide better names for the following variables and functions.',
-  Documentation = 'Please provide documentation for the following code.',
-  SwaggerApiDocs = 'Please provide documentation for the following API using Swagger.',
-  SwaggerJsDocs = 'Please write JSDoc for the following API using Swagger.',
-  -- Text related prompts
-  Summarize = 'Please summarize the following text.',
-  Spelling = 'Please correct any grammar and spelling errors in the following text.',
-  Wording = 'Please improve the grammar and wording of the following text.',
-  Concise = 'Please rewrite the following text to make it more concise.',
+  -- code related prompts
+  explain = 'please explain how the following code works.',
+  review = 'please review the following code and provide suggestions for improvement.',
+  tests = 'please explain how the selected code works, then generate unit tests for it.',
+  refactor = 'please refactor the following code to improve its clarity and readability.',
+  fixcode = 'please fix the following code to make it work as intended.',
+  fixerror = 'please explain the error in the following text and provide a solution.',
+  betternamings = 'please provide better names for the following variables and functions.',
+  documentation = 'please provide documentation for the following code.',
+  swaggerapidocs = 'please provide documentation for the following api using swagger.',
+  swaggerjsdocs = 'please write jsdoc for the following api using swagger.',
+  -- text related prompts
+  summarize = 'please summarize the following text.',
+  spelling = 'please correct any grammar and spelling errors in the following text.',
+  wording = 'please improve the grammar and wording of the following text.',
+  concise = 'please rewrite the following text to make it more concise.',
 }
 --
 --
--- NOTE: Here is where you install your plugins.
+-- note: here is where you install your plugins.
 require('lazy').setup({
-  -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  -- note: plugins can be added with a link (or for a github repo: 'owner/repo' link).
+  --'tpope/vim-sleuth', -- detect tabstop and shiftwidth automatically
+  'darazaki/indent-o-matic', -- detect tabstop and shiftwidth automatically
 
-  -- NOTE: Plugins can also be added by using a table,
+  -- note: plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
   --
-  -- Use `opts = {}` to force a plugin to be loaded.
+  -- use `opts = {}` to force a plugin to be loaded.
   --
 
-  -- Here is a more advanced example where we pass configuration
-  -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
+  -- here is a more advanced example where we pass configuration
+  -- options to `gitsigns.nvim`. this is equivalent to the following lua:
   --    require('gitsigns').setup({ ... })
   --
   -- See `:help gitsigns` to understand what the configuration keys do
@@ -287,23 +293,23 @@ require('lazy').setup({
       vim.cmd 'colorscheme nightfox'
     end,
   },
-  {
-    'github/copilot.vim',
-  },
-  {
-    'CopilotC-Nvim/CopilotChat.nvim',
-    branch = 'canary',
-    dependencies = {
-      { 'zbirenbaum/copilot.lua' }, -- or github/copilot.vim
-      { 'nvim-lua/plenary.nvim' }, -- for curl, log wrapper
-    },
-    build = 'make tiktoken', -- Only on MacOS or Linux
-    opts = {
-      debug = true, -- Enable debugging
-      -- See Configuration section for rest
-    },
-    -- See Commands section for default commands if you want to lazy load on them
-  },
+  -- {
+  --  'github/copilot.vim',
+  --},
+  --{
+  --  'CopilotC-Nvim/CopilotChat.nvim',
+  --  branch = 'canary',
+  --  dependencies = {
+  --    { 'zbirenbaum/copilot.lua' }, -- or github/copilot.vim
+  --    { 'nvim-lua/plenary.nvim' }, -- for curl, log wrapper
+  --  },
+  --  build = 'make tiktoken', -- Only on MacOS or Linux
+  --  opts = {
+  --    debug = true, -- Enable debugging
+  --    -- See Configuration section for rest
+  --  },
+  --  -- See Commands section for default commands if you want to lazy load on them
+  --},
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -596,6 +602,9 @@ require('lazy').setup({
           --  For example, in C this would take you to the header.
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
+          -- Shows function signature while in insert mode
+          map('<C-h>', vim.lsp.buf.signature_help, 'Function signature [h]elp', 'i')
+
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
           --    See `:help CursorHold` for information about when this is executed
@@ -874,11 +883,11 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          -- ['<C-y>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
-          --['<CR>'] = cmp.mapping.confirm { select = true },
+          ['<CR>'] = cmp.mapping.confirm { select = true },
           --['<Tab>'] = cmp.mapping.select_next_item(),
           --['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
@@ -900,11 +909,11 @@ require('lazy').setup({
               luasnip.expand_or_jump()
             end
           end, { 'i', 's' }),
-          ['<C-h>'] = cmp.mapping(function()
-            if luasnip.locally_jumpable(-1) then
-              luasnip.jump(-1)
-            end
-          end, { 'i', 's' }),
+          --['<C-h>'] = cmp.mapping(function()
+          --  if luasnip.locally_jumpable(-1) then
+          --    luasnip.jump(-1)
+          --  end
+          --end, { 'i', 's' }),
 
           -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
           --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
