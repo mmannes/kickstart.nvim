@@ -812,13 +812,15 @@ require('lazy').setup({
           adapter = 'gemini',
         },
       },
-      gemini = function()
-        return require('codecompanion.adapters').extend('gemini', {
-          env = {
-            api_key = 'cmd: gpg --batch --quiet --decrypt ~/Documents/Certificados/gemini_api_key.txt.gpg',
-          },
-        })
-      end,
+      adapters = {
+        gemini = function()
+          return require('codecompanion.adapters').extend('gemini', {
+            env = {
+              api_key = 'cmd: gpg --batch --quiet --decrypt ~/Documents/Certificados/gemini_api_key.txt.gpg',
+            },
+          })
+        end,
+      },
       display = {
         diff = {
           provider = 'mini_diff',
