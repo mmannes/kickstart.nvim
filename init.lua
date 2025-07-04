@@ -796,6 +796,55 @@ require('lazy').setup({
     end,
   },
 
+  -- IA Assistant CodeCompanion
+  {
+    'olimorris/codecompanion.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+    opts = {
+      strategies = {
+        chat = {
+          adapter = 'gemini',
+        },
+        inline = {
+          adapter = 'gemini',
+        },
+      },
+      gemini = function()
+        return require('codecompanion.adapters').extend('gemini', {
+          env = {
+            api_key = 'cmd: gpg --batch --quiet --decrypt ~/Documents/Certificados/gemini_api_key.txt.gpg',
+          },
+        })
+      end,
+      display = {
+        diff = {
+          provider = 'mini_diff',
+        },
+      },
+    },
+  },
+
+  -- Markdown with CodeCompanion
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    ft = { 'markdown', 'codecompanion' },
+  },
+
+  -- Diff tool to use with CodeCompanion
+  {
+    'echasnovski/mini.diff',
+    config = function()
+      local diff = require 'mini.diff'
+      diff.setup {
+        -- Disabled by default
+        source = diff.gen_source.none(),
+      }
+    end,
+  },
+
   { -- Autoformat
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
