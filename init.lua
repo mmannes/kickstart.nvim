@@ -720,9 +720,9 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         rust_analyzer = {},
         intelephense = {
           on_attach = function(client, bufnr)
@@ -734,6 +734,9 @@ require('lazy').setup({
                 undefinedTypes = true,
               },
               environment = {
+                includePaths = {
+                  '../core',
+                },
                 shortOpenTag = true,
                 documentRoot = 'main.php',
               },
@@ -1124,7 +1127,7 @@ require('lazy').setup({
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
