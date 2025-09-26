@@ -808,14 +808,26 @@ require('lazy').setup({
     },
     opts = {
       strategies = {
-        chat = {
-          adapter = 'gemini',
-        },
-        inline = {
-          adapter = 'gemini',
-        },
+        chat = { adapter = 'ollama_remote' },
+        inline = { adapter = 'ollama_remote' },
+        agent = { adapter = 'ollama_remote' },
       },
       adapters = {
+        -- Define a custom adapter for the remote Ollama server
+        ollama_remote = function()
+          return require('codecompanion.adapters').extend('ollama', {
+            name = 'ollama_remote', -- Give this adapter a distinct name
+            env = {
+              -- Set the URL to your Ollama server's IP address
+              url = 'http://192.168.1.192:11434',
+            },
+            schema = {
+              model = {
+                default = 'qwen2.5-coder:7b', -- Use the name of your desired Ollama model
+              },
+            },
+          })
+        end,
         gemini = function()
           return require('codecompanion.adapters').extend('gemini', {
             env = {
