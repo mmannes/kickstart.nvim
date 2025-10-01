@@ -723,7 +723,15 @@ require('lazy').setup({
         clangd = {},
         -- gopls = {},
         pyright = {},
-        rust_analyzer = {},
+        rust_analyzer = {
+          settings = {
+            ['rust-analyzer'] = {
+              cargo = {
+                features = 'all', -- Enable all features
+              },
+            },
+          },
+        },
         intelephense = {
           on_attach = function(client, bufnr)
             print 'Hello little PHP shit'
