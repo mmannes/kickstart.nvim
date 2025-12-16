@@ -90,6 +90,10 @@ P.S. You can delete this when you're done too. It's your config now! :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- ADDED: disabele netrw to use nvim-tree
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
@@ -500,7 +504,13 @@ require('lazy').setup({
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
-
+  -- ADDED
+  {
+    'nvim-tree/nvim-tree.lua',
+    config = function()
+      require('nvim-tree').setup()
+    end,
+  },
   -- LSP Plugins
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -1177,7 +1187,7 @@ require('lazy').setup({
 -- TOP REMAPS
 vim.g.mapleader = ' '
 vim.o.jumpoptions = 'view'
-vim.keymap.set('n', '<leader>v', vim.cmd.Ex, { desc = 'Open [V]ertical file explorer' })
+vim.keymap.set('n', '<leader>v', ':NvimTreeToggle<CR>', { desc = 'Open [V]ertical file explorer' })
 
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
