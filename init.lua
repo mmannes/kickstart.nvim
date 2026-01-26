@@ -447,6 +447,10 @@ require('lazy').setup({
         --   },
         -- },
         pickers = {
+          find_files = {
+            hidden = true,
+            no_ignore = true,
+          },
           buffers = {
             sort_lastused = true,
             mappings = {
@@ -508,7 +512,11 @@ require('lazy').setup({
   {
     'nvim-tree/nvim-tree.lua',
     config = function()
-      require('nvim-tree').setup()
+      require('nvim-tree').setup {
+        git = {
+          ignore = false,
+        },
+      }
     end,
   },
   -- LSP Plugins
