@@ -757,6 +757,8 @@ require('lazy').setup({
               environment = {
                 includePaths = {
                   '../core',
+                  '/Users/marco/Development/transmagna-extranet/extranet-root',
+                  '/Users/marco/Development/transmagna-extranet/PHPMailer-master',
                 },
                 shortOpenTag = true,
                 documentRoot = 'main.php',
