@@ -741,6 +741,7 @@ require('lazy').setup({
             ['rust-analyzer'] = {
               cargo = {
                 features = 'all', -- Enable all features
+                cargo = { targetDir = true }, -- point rust-analyzer to a subdirectory target dir
               },
             },
           },
